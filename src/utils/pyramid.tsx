@@ -17,7 +17,6 @@ export class PyramidAPI extends HttpClient{
         super(url)
         this.username = username;
         this.password = password;
-        // this._initializeRequestInterceptor();
     }
 
     public async signIn(){

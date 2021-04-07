@@ -22,7 +22,7 @@ export function NotificationController(){
 
     function toggleDebug(){
         dispatch(setDebugEnabled(!state.debugEnabled));
-        dispatch(sendNotification("ok!"));
+        dispatch(sendNotification("ALERTS: (4)"));
     };
     
     const notificationItems = []

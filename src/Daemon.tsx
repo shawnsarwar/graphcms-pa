@@ -11,12 +11,12 @@ import {
 } from './features/notification/notificationSlice';
 import {addEventListener, NotificationActionEvent} from 'openfin-notifications';
 
-var pyramidConfig = {};
-var API;
-var USERINFO;
+var pyramidConfig: any = {};
+var API: PyramidAPI;
+var USERINFO: any;
 var RUNNING = false;
 var STOP = false;
-var timer;
+var timer: any;
 var INTERVAL = 5;
 
 function getNotificationState(){
@@ -51,7 +51,7 @@ async function initializeDaemon(){
     console.log(pyramidConfig);
     
     API = new PyramidAPI(
-        'https://' + pyramidConfig.hostname,
+        'https://' + pyramidConfig['hostname'],
         pyramidConfig.username,
         pyramidConfig.password
     );
@@ -77,39 +77,44 @@ async function doTask(){
 function formatCounts(updates: NotificationIndicatorsResult){
     const lines: Array<string> = []
     for (const [k, v] of Object.entries(updates)){
-         lines.push(k.toUpperCase() + ": (" + v.toString() + ")");
+         lines.push(k.toUpperCase() + ": (" + v?.toString() + ")");
     }
     return lines.join('\n');
 }
 
-async function newUpdates(){
-    var counts: NotificationState = store.getState().notification;
-    var currentUnread: NotificationIndicatorsResult = await ( await API.getNotificationCount(USERINFO.id).data);
-    return await processUpdates(counts, currentUnread) as NotificationIndicatorsResult;
-}
+//Implement when API is available
+
+// async function newUpdates(){
+//     var counts: NotificationState = store.getState().notification;
+//     var currentUnread: NotificationIndicatorsResult = await ( await API.getNotificationCount(USERINFO.id).data);
+//     return await processUpdates(counts, currentUnread) as NotificationIndicatorsResult;
+// }
 
 async function processUpdates(counts: NotificationState, currentUnread: NotificationIndicatorsResult){
-    var newUnread = {};
+    var newUnread : NotificationIndicatorsResult = {};
     Object.values(counts.notifications).forEach(
         (item: NotificationItem) => {
+            var k = item.name as keyof NotificationIndicatorsResult;
             if(item.enabled){
-                var unread = currentUnread[item.name] - item.count;
+                // reading object properties dynamically is stupid hard if you want to make TS happy...
+                var unreadOfType = currentUnread[k];
+                var unread: number = unreadOfType !== undefined ? unreadOfType - item.count : 0;
                 if( unread > 0 ){
                     console.debug('New unread of type: '
-                        + item.name + " @"
-                        + counts.notifications[item.name].count);
-                    newUnread[item.name] = unread
+                        + k + " @"
+                        + counts.notifications[k].count);
+                    newUnread[k] = unread
                 }
                 else{
                     console.debug('Still: '
-                        + item.name+ " @"
-                        + counts.notifications[item.name].count);
+                        + k + " @"
+                        + counts.notifications[k].count);
                 }
             }
             // set updated value in store
             store.dispatch(setNotificationType({
                 ...item,
-                count: currentUnread[item.name]
+                count: currentUnread[k] as number
             }))
     });
     if (Object.keys(newUnread).length === 0){
@@ -125,7 +130,8 @@ async function mockNewUpdates(){
 }
 
 function mockCurrentUnread(state: NotificationState){
-    var fakeState = {};
+    type FakeState<T extends string> = { [category in T]: number }
+    var fakeState: FakeState<string> = {};
     Object.values(state.notifications).forEach((item: NotificationItem) => {
         // add 0 -> 2 new items
         fakeState[item.name] = item.count + Math.floor(Math.random() * Math.floor(3));
@@ -141,7 +147,7 @@ async function registerListener(){
     addEventListener('notification-action', async (event: NotificationActionEvent) => {
         const {
             result,
-            notification
+            notification,
         } = event;
         console.log("Caught callback on notification action")
         if (result['task'] === 'open-pyramid') {
