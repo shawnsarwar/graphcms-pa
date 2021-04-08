@@ -35,25 +35,35 @@ export function NotificationController(){
     }
     return(
         <div id="notification-controller" className={styles.pannel}>
-            <div className={styles.logo}/>
-            <div id="enabled">
-                <DaemonSwitchWidget/>
+            <div className={styles.logo_container}>
+                <div className={styles.logo_img}/>
             </div>
-            <div id="interval">
-                <div className={styles.label}><div>POLL INTERVAL</div></div>
-                <input
-                    name="poll_interval_input"
-                    className={styles.input_center}
-                    type="number"
-                    value={state.daemonPollSec}
-                    onChange={e => setInterval(e)}
-                />
-            </div>
-            <div id="notification-items">
-                <div className={styles.label}
-                onDoubleClick={toggleDebug}
-                    ><div>NOTIFICATIONS</div></div>
-                {notificationItems}
+            <div className={styles.notification_content}>
+                <div className={styles.section}>
+                    <div id="enabled">
+                        <DaemonSwitchWidget/>
+                    </div>
+                </div>
+                <div className={styles.section}>
+                    <label>Poll Interval
+                        <span>
+                        <input
+                                name="poll_interval_input"
+                                type="number"
+                                value={state.daemonPollSec}
+                                onChange={e => setInterval(e)}
+                            />
+                        </span>
+                    </label>
+                </div>
+                <hr/>
+                <div id="notification-items">
+                    <div className={styles.label}
+                    onDoubleClick={toggleDebug}
+                        ><div>Notifications</div></div>
+                    {notificationItems}
+                </div>
+                
             </div>
         </div>
     );
@@ -62,6 +72,7 @@ export function NotificationController(){
 interface NotificationWidgetProperty {
     name: string
 }
+
 
 export function NotificationItemWidget(props: NotificationWidgetProperty){
     const state: NotificationItem = useSelector((state: RootState) => selectNotificationType(state, props.name));
@@ -74,12 +85,21 @@ export function NotificationItemWidget(props: NotificationWidgetProperty){
         }));
         console.log(state);
     };
-    const classNames = (state.enabled ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
+    // const classNames = (state.enabled ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
+    const classNames = [styles.icon, styles[state.name]].join(' ')
     return(
-        <button 
-            className={classNames}
-            onClick={toggle}
-        >{state.name.toUpperCase()}</button>
+      <div>
+        <label>
+        <input type="checkbox"
+            checked={state.enabled}
+            onChange={toggle}
+          />
+          <div className={classNames} id={state.name}/>
+          <span>
+            {state.name}
+        </span>
+        </label>
+      </div> 
     );
 }
 
@@ -91,11 +111,20 @@ export function DaemonSwitchWidget(){
         dispatch(setDaemonEnabled(!state));
         console.log(state);
     };
-    const classNames = (state ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
+    // const classNames = (state ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
     return(
-        <button 
-            className={classNames}
-            onClick={toggle}
-        >{"Enable Notifications".toUpperCase()}</button>
+      <div>
+        <label>
+        <input type="checkbox"
+            checked={state}
+            onChange={toggle}
+          />
+          <span>Enable Notifications</span>
+        </label>
+      </div> 
+        // <button 
+        //     className={classNames}
+        //     onClick={toggle}
+        // >{"Enable Notifications".toUpperCase()}</button>
     );
 }
