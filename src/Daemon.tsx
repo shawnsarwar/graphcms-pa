@@ -1,14 +1,10 @@
 import { store, forceUpdateState} from "./app/store"
-import {PyramidAPI} from "./utils/pyramid";
 
+import {PyramidAPI} from "./utils/pyramid";
 import {NotificationIndicatorsResult} from "./utils/api_types";
 
-import {
-  sendNotification,
-  setNotificationType,
-  NotificationState,
-  NotificationItem
-} from './features/notification/notificationSlice';
+import {formatCounts, newUpdates} from "./features/notification/Helpers"
+import {sendNotification} from './features/notification/notificationSlice';
 import {addEventListener, NotificationActionEvent} from 'openfin-notifications';
 
 var pyramidConfig: any = {};
@@ -62,83 +58,14 @@ async function initializeDaemon(){
 }
 
 async function doTask(){
-    var res: NotificationIndicatorsResult = await mockNewUpdates();
+    var res: NotificationIndicatorsResult = await newUpdates(API, USERINFO, store);
     if (res !== undefined){
         store.dispatch(
             sendNotification(
                 formatCounts(res)));
-
     }else{
         console.debug('No new updates found');
     }
-    
-}
-
-function formatCounts(updates: NotificationIndicatorsResult){
-    const lines: Array<string> = []
-    for (const [k, v] of Object.entries(updates)){
-         lines.push(k.toUpperCase() + ": (" + v?.toString() + ")");
-    }
-    return lines.join('\n');
-}
-
-//Implement when API is available
-
-// async function newUpdates(){
-//     var counts: NotificationState = store.getState().notification;
-//     var currentUnread: NotificationIndicatorsResult = await ( await API.getNotificationCount(USERINFO.id).data);
-//     return await processUpdates(counts, currentUnread) as NotificationIndicatorsResult;
-// }
-
-async function processUpdates(counts: NotificationState, currentUnread: NotificationIndicatorsResult){
-    var newUnread : NotificationIndicatorsResult = {};
-    Object.values(counts.notifications).forEach(
-        (item: NotificationItem) => {
-            var k = item.name as keyof NotificationIndicatorsResult;
-            if(item.enabled){
-                // reading object properties dynamically is stupid hard if you want to make TS happy...
-                var unreadOfType = currentUnread[k];
-                var unread: number = unreadOfType !== undefined ? unreadOfType - item.count : 0;
-                if( unread > 0 ){
-                    console.debug('New unread of type: '
-                        + k + " @"
-                        + counts.notifications[k].count);
-                    newUnread[k] = unread
-                }
-                else{
-                    console.debug('Still: '
-                        + k + " @"
-                        + counts.notifications[k].count);
-                }
-            }
-            // set updated value in store
-            store.dispatch(setNotificationType({
-                ...item,
-                count: currentUnread[k] as number
-            }))
-    });
-    if (Object.keys(newUnread).length === 0){
-        return undefined;
-    }
-    return newUnread as NotificationIndicatorsResult;
-}
-
-async function mockNewUpdates(){
-    var counts: NotificationState = store.getState().notification;
-    var currentUnread: NotificationIndicatorsResult = mockCurrentUnread(counts);
-    return await processUpdates(counts, currentUnread) as NotificationIndicatorsResult;
-}
-
-function mockCurrentUnread(state: NotificationState){
-    type FakeState<T extends string> = { [category in T]: number }
-    var fakeState: FakeState<string> = {};
-    Object.values(state.notifications).forEach((item: NotificationItem) => {
-        // add 0 -> 2 new items
-        fakeState[item.name] = item.count + Math.floor(Math.random() * Math.floor(3));
-    });
-    // make sure alerts is always incremented so we get the pop-up
-    fakeState["alerts"] += 1;
-    return fakeState as NotificationIndicatorsResult;
 }
 
 async function registerListener(){
@@ -161,7 +88,7 @@ async function registerListener(){
             
             var options = {
                 name: child_window,
-                url: "http://localhost:5555/pyramid-client.html",
+                url: 'https://' + pyramidConfig['hostname'] + '/?bulletin',
                 defaultWidth: 900,
                 defaultHeight: 640,
                 autoShow: true

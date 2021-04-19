@@ -1,11 +1,10 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
+    debugCurrentState,
     setNotificationType,
     setDaemonEnabled,
-    setDebugEnabled,
     setDaemonPollSec,
-    sendNotification,
     selectNotificationState,
     selectNotificationEnabled,
     selectNotificationType,
@@ -21,8 +20,9 @@ export function NotificationController(){
     //TODO got lazy with the abstraction, make a single toggle class
 
     function toggleDebug(){
-        dispatch(setDebugEnabled(!state.debugEnabled));
-        dispatch(sendNotification("ALERTS: (4)"));
+        // dispatch(setDebugEnabled(!state.debugEnabled));
+        dispatch(debugCurrentState());
+        // dispatch(sendNotification("ALERTS: (4)"));
     };
     
     const notificationItems = []
@@ -85,7 +85,6 @@ export function NotificationItemWidget(props: NotificationWidgetProperty){
         }));
         console.log(state);
     };
-    // const classNames = (state.enabled ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
     const classNames = [styles.icon, styles[state.name]].join(' ')
     return(
       <div>
@@ -111,7 +110,6 @@ export function DaemonSwitchWidget(){
         dispatch(setDaemonEnabled(!state));
         console.log(state);
     };
-    // const classNames = (state ? [styles.button, styles.buttonEnable] : [styles.button, styles.buttonDisable]).join(" ");
     return(
       <div>
         <label>
@@ -122,9 +120,5 @@ export function DaemonSwitchWidget(){
           <span>Enable Notifications</span>
         </label>
       </div> 
-        // <button 
-        //     className={classNames}
-        //     onClick={toggle}
-        // >{"Enable Notifications".toUpperCase()}</button>
     );
 }

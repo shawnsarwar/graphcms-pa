@@ -1,7 +1,7 @@
 import { configureStore, ThunkAction, Action, DeepPartial, StateFromReducersMapObject, PayloadAction} from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
 import notificationReducer from '../features/notification/notificationSlice';
-import {setNotificationState, NotificationState} from '../features/notification/notificationSlice';
+import {setNotificationState} from '../features/notification/notificationSlice';
 import {saveState, load} from './localStore';
 
 const savedState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
@@ -28,7 +28,7 @@ export type AppThunk<ReturnType = void> = ThunkAction<
   Action<string>
 >;
 
-type Store = ReturnType<typeof initStore>
+export type Store = ReturnType<typeof initStore>
 export type AppDispatch = Store['dispatch']
 export const store: Store = initStore(savedState as any);
 

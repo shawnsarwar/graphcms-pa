@@ -40,9 +40,7 @@ export class PyramidAPI extends HttpClient{
             '/API2/notification/getNotificationIndicators',
             {
                 auth: this.token,
-                data :{
-                    userId: user_id
-                }                
+                userId: user_id                
             }
         )
     

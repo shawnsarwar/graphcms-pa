@@ -1,6 +1,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { AppThunk, RootState } from '../../app/store';
 import {create as createOFN} from 'openfin-notifications';
+import {PyramidAPI} from '../../utils/pyramid'
+import {formatCounts, serverNotificationValues} from './Helpers';
+
+var pyramidConfig: any = {};
+var API: PyramidAPI;
+var USERINFO: any;
+
+// API Connection
+async function connectAPI(){
+    if (USERINFO !== undefined){
+        return;
+    }
+    pyramidConfig = await( await fetch('../pyramid.config.json')).json();
+    API = new PyramidAPI(
+        'https://' + pyramidConfig['hostname'],
+        pyramidConfig.username,
+        pyramidConfig.password
+    );
+    await API.signIn();
+    USERINFO = await API.getMe().then(response => response.data);
+}
 
 export interface NotificationMessage{
     body: string;
@@ -81,7 +102,7 @@ export const notificationSlice = createSlice({
         state.debugEnabled = action.payload;
     },
     setNotificationType: (state, action: PayloadAction<NotificationItem>) =>{
-        state.notifications[action.payload.name].enabled = action.payload.enabled;
+        state.notifications[action.payload.name] = action.payload;
     },
     setDaemonEnabled: (state, action: PayloadAction<boolean>) => {
         state.daemonEnabled = action.payload;
@@ -99,6 +120,25 @@ export const {
     setDaemonEnabled,
     setDaemonPollSec 
 } = notificationSlice.actions;
+
+export const debugCurrentState = (): AppThunk => dispatch => {
+    var message = '';
+    if (USERINFO === undefined){
+        message = 'Pyramid API Connection not Initialized';
+        createOFN({
+            ...msg,
+            body: message
+        } as any);
+    }else{
+        serverNotificationValues(API, USERINFO).then((values) => {
+            createOFN({
+                ...msg,
+                body: formatCounts(values)
+            } as any);
+        });
+    }
+    
+};
 
 export const sendNotification = (message: string): AppThunk => dispatch => {
     createOFN({
@@ -138,3 +178,6 @@ export const selectNotificationType = (state: RootState, name: string) => {
 }
 
 export default notificationSlice.reducer;
+
+// Init
+connectAPI();
