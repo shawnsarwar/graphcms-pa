@@ -11,6 +11,7 @@ import {
     NotificationItem,
     NotificationState
 } from './notificationSlice';
+import {AuthController, AuthControllerType} from '../auth/Auth'
 import styles from './Notification.module.css';
 import { RootState } from '../../app/store';
 
@@ -20,9 +21,7 @@ export function NotificationController(){
     //TODO got lazy with the abstraction, make a single toggle class
 
     function toggleDebug(){
-        // dispatch(setDebugEnabled(!state.debugEnabled));
         dispatch(debugCurrentState());
-        // dispatch(sendNotification("ALERTS: (4)"));
     };
     
     const notificationItems = []
@@ -63,6 +62,7 @@ export function NotificationController(){
                         ><div>Notifications</div></div>
                     {notificationItems}
                 </div>
+                <AuthController display={AuthControllerType.Settings}></AuthController>
                 
             </div>
         </div>

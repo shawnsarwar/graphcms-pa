@@ -1,5 +1,9 @@
 export type UserToken = string;
 
+export type UserInfo = {
+    id: string
+}
+
 export type NotificationIndicatorsResult = {
     models?: number;
     subscriptions?: number;

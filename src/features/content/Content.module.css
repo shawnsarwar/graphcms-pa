@@ -1,0 +1,9 @@
+.embed_container {
+  
+    border: #fff00fff;
+    width: 100%;
+    height: 100%;
+    min-width: 500px;
+    min-height: 500px;
+    background-color:#474747;
+  }

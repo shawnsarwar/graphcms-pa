@@ -5,6 +5,7 @@
   "homepage": ".",
   "dependencies": {
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
+    "@pyramid-embed/embed-react": "^2.0.13",
     "@reduxjs/toolkit": "^1.5.0",
     "@svgr/webpack": "5.5.0",
     "@testing-library/jest-dom": "^4.2.4",
@@ -58,6 +59,7 @@
     "prompts": "2.4.0",
     "react": "^17.0.1",
     "react-app-polyfill": "^2.0.0",
+    "react-cookie": "^4.0.3",
     "react-dev-utils": "^11.0.3",
     "react-dom": "^17.0.1",
     "react-redux": "^7.2.2",

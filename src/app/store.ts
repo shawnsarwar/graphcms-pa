@@ -1,4 +1,11 @@
-import { configureStore, ThunkAction, Action, DeepPartial, StateFromReducersMapObject, PayloadAction} from '@reduxjs/toolkit';
+import {
+  configureStore,
+  ThunkAction,
+  Action,
+  DeepPartial,
+  StateFromReducersMapObject
+} from '@reduxjs/toolkit';
+import authReducer from '../features/auth/authSlice';
 import counterReducer from '../features/counter/counterSlice';
 import notificationReducer from '../features/notification/notificationSlice';
 import {setNotificationState} from '../features/notification/notificationSlice';
@@ -7,6 +14,7 @@ import {saveState, load} from './localStore';
 const savedState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
 
 const reducer = {
+  auth: authReducer,
   counter: counterReducer,
   notification: notificationReducer
 }
@@ -34,12 +42,11 @@ export const store: Store = initStore(savedState as any);
 
 store.subscribe(() => {
   saveState({
+    auth: store.getState().auth,
     notification: store.getState().notification,
     counter: store.getState().counter
   });
 });
-
-
 
 export async function forceUpdateState(){
   const newState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
