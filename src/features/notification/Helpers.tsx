@@ -9,9 +9,9 @@ import {
 
 export async function serverNotificationValues(
     API: PyramidAPI,
-    USERINFO: any
+    user_id: string
 ){
-    return await API.getNotificationCount(USERINFO.id).then(
+    return await API.getNotificationCount(user_id).then(
         response => response.data) as NotificationIndicatorsResult;
 }
 
@@ -25,11 +25,11 @@ export function formatCounts(updates: NotificationIndicatorsResult){
 
 export async function newUpdates(
     API: PyramidAPI,
-    USERINFO: any,
+    user_id: string,
     store: Store)
 {
     var counts: NotificationState = store.getState().notification;
-    var currentUnread = await API.getNotificationCount(USERINFO.id).then(response => response.data);  
+    var currentUnread = await API.getNotificationCount(user_id).then(response => response.data);  
     return await processUpdates(store, counts, currentUnread) as NotificationIndicatorsResult;
 }
 

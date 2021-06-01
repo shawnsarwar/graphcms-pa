@@ -1,4 +1,4 @@
-import {PyramidAPI} from "../../utils/pyramid";
+import {PyramidAPI, makePasswordGrant, makeTokenGrant} from "../../utils/pyramid";
 import {UserInfo} from "../../utils/api_types";
 import  {
     LoginCredentials,
@@ -7,9 +7,7 @@ import  {
 
 export async function makeSession(creds: LoginCredentials){
     var API: PyramidAPI  = new PyramidAPI(
-        creds.domain ,
-        creds.user_name,
-        creds.password
+        makePasswordGrant(creds.domain ,creds.user_name, creds.password)
     );
     await API.signIn();
     var user: UserInfo = await API.getMe().then(response => response?.data);
@@ -29,7 +27,7 @@ export async function makeSession(creds: LoginCredentials){
 }
 
 export async function validSession(session: LoginSession){
-    var API: PyramidAPI = new PyramidAPI(session.domain, session.token);
+    var API: PyramidAPI = new PyramidAPI(makeTokenGrant(session.domain, session.token));
     API.getMe()
         .then(
             () => {

@@ -33,7 +33,6 @@ export function AuthLogoutWidget(props?: AuthControllerProps){
     }
     return (
         <div onClick={doLogout}>
-            {/* <button className={[styles.logout_button, styles.user_info_button].join(" ")}> */}
             <button className={styles.logout_button}>
                 <div className={styles.logout_icon}/>
                 <span>Logout</span>

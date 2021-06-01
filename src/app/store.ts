@@ -6,6 +6,7 @@ import {
   StateFromReducersMapObject
 } from '@reduxjs/toolkit';
 import authReducer from '../features/auth/authSlice';
+import contentReducer from '../features/content/contentSlice';
 import counterReducer from '../features/counter/counterSlice';
 import notificationReducer from '../features/notification/notificationSlice';
 import {setNotificationState} from '../features/notification/notificationSlice';
@@ -16,6 +17,7 @@ const savedState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
 const reducer = {
   auth: authReducer,
   counter: counterReducer,
+  content: contentReducer,
   notification: notificationReducer
 }
 
@@ -44,11 +46,16 @@ store.subscribe(() => {
   saveState({
     auth: store.getState().auth,
     notification: store.getState().notification,
+    content: store.getState().content,
     counter: store.getState().counter
   });
 });
 
 export async function forceUpdateState(){
   const newState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
-  store.dispatch(setNotificationState(newState.notification as any));
+  try{
+    store.dispatch(setNotificationState(newState.notification as any));
+  }catch(err){
+    console.warn('Could not force update of state, there may be no existing state to update');
+  }
 }

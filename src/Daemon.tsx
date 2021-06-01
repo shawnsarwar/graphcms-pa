@@ -1,15 +1,16 @@
 import { store, forceUpdateState} from "./app/store"
 
-import {PyramidAPI} from "./utils/pyramid";
+import {PyramidAPI, makeTokenGrant} from "./utils/pyramid";
 import {NotificationIndicatorsResult} from "./utils/api_types";
 
 import {formatCounts, newUpdates} from "./features/notification/Helpers"
 import {sendNotification} from './features/notification/notificationSlice';
 import {addEventListener, NotificationActionEvent} from 'openfin-notifications';
 
-var pyramidConfig: any = {};
-var API: PyramidAPI;
-var USERINFO: any;
+var API: PyramidAPI | undefined;
+var user_id: string;
+
+var REGISTERED = false;
 var RUNNING = false;
 var STOP = false;
 var timer: any;
@@ -20,19 +21,50 @@ function getNotificationState(){
     return store.getState().notification;
 }
 
-async function startNotificationDaemon(){
+function getClient() : PyramidAPI | undefined{
+    if (API){
+        return API;
+    }
+    var auth = store.getState().auth;
+    if (!auth || !auth.token){
+        console.warn('Pyramid Client not logged in.');
+        return;
+    }
+    API = new PyramidAPI(makeTokenGrant(auth.domain, auth.token));
+    user_id = auth.user_id;
+    return API;
+}
+
+export async function startNotificationDaemon(){
     if (RUNNING){
         console.warn("daemon already running... skipping new run");
         return;
     }
+    console.info('starting daemon');
     (
         function looper(){
             timer = setTimeout( function() {
                 RUNNING = true;
-                var ns = getNotificationState();
-                INTERVAL = ns.daemonPollSec * 1000;
-                if (ns.daemonEnabled){
-                    doTask();
+                var client = undefined;
+                try{
+                    client = getClient();
+                }catch(err){
+                    console.log(err);
+                }
+                if (client !== undefined && !REGISTERED){
+                    console.log(`registering client to callback notification => ${client.url}`);
+                    registerListener();
+                }
+                try{
+                    let ns = getNotificationState();
+                    INTERVAL = ns.daemonPollSec * 1000;
+                    if (ns.daemonEnabled && client !== undefined){
+                        doTask();
+                    }else if (ns.daemonEnabled){
+                        console.warn('Pyramid Client not signed in');
+                    }
+                }catch(err){
+                    console.warn('No current notification State');
                 }
                 if(!STOP){
                     looper();
@@ -42,23 +74,17 @@ async function startNotificationDaemon(){
     )();
 }
 
-async function initializeDaemon(){
-    pyramidConfig = await( await fetch('../pyramid.config.json')).json();
-    console.log(pyramidConfig);
-    
-    API = new PyramidAPI(
-        'https://' + pyramidConfig['hostname'],
-        pyramidConfig.username,
-        pyramidConfig.password
-    );
-    await API.signIn();
-    USERINFO = await API.getMe().then(response => response.data);
-    console.info('starting daemon');
-    startNotificationDaemon();
-}
-
 async function doTask(){
-    var res: NotificationIndicatorsResult = await newUpdates(API, USERINFO, store);
+    try{
+        if (!API){
+            return;
+        }
+        var res: NotificationIndicatorsResult = await newUpdates(API, user_id, store);
+    } catch(err){
+        console.error(err);
+        API = undefined;
+        return;
+    }
     if (res !== undefined){
         store.dispatch(
             sendNotification(
@@ -70,13 +96,17 @@ async function doTask(){
 
 async function registerListener(){
     // make sure we have an OF app
-    await fin.Application.getCurrent();
+    try{
+        await fin.Application.getCurrent();
+    }catch(err){
+        console.warn('OpenFin not accessible');
+        return;
+    }
     addEventListener('notification-action', async (event: NotificationActionEvent) => {
         const {
             result,
             notification,
         } = event;
-        console.log("Caught callback on notification action")
         if (result['task'] === 'open-pyramid') {
             console.log("Caught callback from open-pyramid");
             const child_window =  'pyramid_notification_callback';
@@ -85,10 +115,18 @@ async function registerListener(){
             const app_info = await (await fin.Application.getCurrent()).getInfo();
             // I hate the double await ^^ (less than a promise?)
             const app_uuid = app_info.initialOptions.uuid;
-            
+            const client = getClient();
+            var url;
+            if (!client?.url){
+                console.log('Could not launch window. No valid pyramid target in client');
+                url = '/settings'
+                return
+            }else{
+                url = `${client.url}/?bulletin`;
+            }
             var options = {
                 name: child_window,
-                url: 'https://' + pyramidConfig['hostname'] + '/?bulletin',
+                url: url,
                 defaultWidth: 900,
                 defaultHeight: 640,
                 autoShow: true
@@ -105,10 +143,5 @@ async function registerListener(){
             });
         }
     });
+    REGISTERED = true;
 }
-
-initializeDaemon();
-registerListener();
-
-
-export default startNotificationDaemon;
