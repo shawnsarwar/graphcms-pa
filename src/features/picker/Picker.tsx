@@ -5,8 +5,10 @@ import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
 
-import {LoginSession} from '../auth/authSlice';
-import {store} from '../../app/store'
+import {LoginSession, selectLoginSession} from '../auth/authSlice'
+import { RootState } from '../../app/store';
+import { useSelector } from 'react-redux';
+import { waitSync } from 'redux-pouchdb'
 import {PyramidAPI, makeTokenGrant} from '../../utils/pyramid';
 import {ContentFolder, ContentItem} from '../../utils/api_types';
 
@@ -64,7 +66,8 @@ interface TreeArgs{
 
 export function SimpleTree(args: TreeArgs) {
     // const classes = useStyles();
-    const session: LoginSession = store.getState().auth;
+    const session: LoginSession = useSelector((state: RootState) => selectLoginSession(state));
+    
     var API: PyramidAPI  = new PyramidAPI(
         makeTokenGrant(session.domain , session.token)
     );
@@ -84,6 +87,12 @@ export function SimpleTree(args: TreeArgs) {
             return;
         }
         const fetchData = async () => {
+            await waitSync('root');
+            console.log(session);
+            if(!session.token){
+                console.log('no auth yet...');
+                return;
+            }
             const [
                 publicRoot,
                 // privateRoot,
@@ -128,6 +137,7 @@ export function TreeFolder(args: FolderArgs){
             return;
         }
         const fetchData = async () => {
+            await waitSync('root');
             const results = await args.api.getFolderItems(args.session.user_id, args.folder.id).then(response => response?.data);
             var folders: Array<ContentFolder> = [];
             var items: Array<ContentItem> = [];

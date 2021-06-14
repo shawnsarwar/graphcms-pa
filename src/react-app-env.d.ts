@@ -9,6 +9,8 @@ declare namespace NodeJS {
   }
 }
 
+declare module "redux-pouchdb"
+
 declare module '*.avif' {
   const src: string;
   export default src;

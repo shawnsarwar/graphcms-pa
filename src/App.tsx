@@ -9,8 +9,6 @@ interface AppProperties {
 
 function App(props: AppProperties) {
   let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
-  console.log(`Got baseURL of ${baseName}`);
-
   return (
     <div className="App">
       <header className="App-header">

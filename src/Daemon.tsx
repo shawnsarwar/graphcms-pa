@@ -1,4 +1,4 @@
-import { store, forceUpdateState} from "./app/store"
+import { store } from "./app/store"
 
 import {PyramidAPI, makeTokenGrant} from "./utils/pyramid";
 import {NotificationIndicatorsResult} from "./utils/api_types";
@@ -17,7 +17,7 @@ var timer: any;
 var INTERVAL = 5;
 
 function getNotificationState(){
-    forceUpdateState();
+    console.log('get notification state');
     return store.getState().notification;
 }
 
@@ -40,11 +40,12 @@ export async function startNotificationDaemon(){
         console.warn("daemon already running... skipping new run");
         return;
     }
+    RUNNING = true;
     console.info('starting daemon');
     (
-        function looper(){
-            timer = setTimeout( function() {
-                RUNNING = true;
+        async function looper(){
+            timer = setTimeout( async function() {
+                console.log("New Loop")
                 var client = undefined;
                 try{
                     client = getClient();
@@ -59,7 +60,7 @@ export async function startNotificationDaemon(){
                     let ns = getNotificationState();
                     INTERVAL = ns.daemonPollSec * 1000;
                     if (ns.daemonEnabled && client !== undefined){
-                        doTask();
+                        await doTask();
                     }else if (ns.daemonEnabled){
                         console.warn('Pyramid Client not signed in');
                     }
@@ -75,6 +76,7 @@ export async function startNotificationDaemon(){
 }
 
 async function doTask(){
+    console.log('Do task start');
     try{
         if (!API){
             return;
@@ -86,6 +88,7 @@ async function doTask(){
         return;
     }
     if (res !== undefined){
+        console.log('dispatching..');
         store.dispatch(
             sendNotification(
                 formatCounts(res)));

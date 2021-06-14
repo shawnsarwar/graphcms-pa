@@ -2,35 +2,40 @@ import {
   configureStore,
   ThunkAction,
   Action,
-  DeepPartial,
-  StateFromReducersMapObject
+  StateFromReducersMapObject,
+  combineReducers
 } from '@reduxjs/toolkit';
+
+import PouchDB from 'pouchdb';
+import { persistStore, persistentReducer } from 'redux-pouchdb'
+
 import authReducer from '../features/auth/authSlice';
 import contentReducer from '../features/content/contentSlice';
 import counterReducer from '../features/counter/counterSlice';
 import notificationReducer from '../features/notification/notificationSlice';
-import {setNotificationState} from '../features/notification/notificationSlice';
-import {saveState, load} from './localStore';
 
-const savedState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
+export const pouchdb = new PouchDB('pyramid-local-application');
 
-const reducer = {
+const reducerStub = {
   auth: authReducer,
-  counter: counterReducer,
   content: contentReducer,
+  counter: counterReducer,
   notification: notificationReducer
 }
 
-export type RootState = StateFromReducersMapObject<typeof reducer>
+const reducer = combineReducers(reducerStub);
+
+const persistedReducer = persistentReducer(pouchdb, 'root')(reducer);
+
+export type RootState = StateFromReducersMapObject<typeof reducerStub>
 
 export function initStore(preloadedState: RootState) {
   return configureStore({
-    reducer,
+    reducer: reducer,
     preloadedState,
   });
 }
 
-// export type RootState = ReturnType<typeof store.getState>;
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,
   RootState,
@@ -40,22 +45,9 @@ export type AppThunk<ReturnType = void> = ThunkAction<
 
 export type Store = ReturnType<typeof initStore>
 export type AppDispatch = Store['dispatch']
-export const store: Store = initStore(savedState as any);
 
-store.subscribe(() => {
-  saveState({
-    auth: store.getState().auth,
-    notification: store.getState().notification,
-    content: store.getState().content,
-    counter: store.getState().counter
-  });
-});
+export const store: Store = configureStore({
+  reducer: persistedReducer
+})
 
-export async function forceUpdateState(){
-  const newState: DeepPartial<RootState> = load() as DeepPartial<RootState>;
-  try{
-    store.dispatch(setNotificationState(newState.notification as any));
-  }catch(err){
-    console.warn('Could not force update of state, there may be no existing state to update');
-  }
-}
+persistStore(store);

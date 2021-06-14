@@ -2,7 +2,8 @@ import React, {useEffect, createRef, useState} from 'react';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../app/store';
 import { useSelector } from 'react-redux';
-import {store, forceUpdateState} from '../../app/store'
+import { store } from '../../app/store';
+import { waitSync } from 'redux-pouchdb';
 
 import {AuthController} from '../auth/Auth'
 import {LoginSession, selectLoginSession} from '../auth/authSlice'
@@ -36,20 +37,45 @@ import {PyramidAPI, makeTokenGrant} from '../../utils/pyramid';
 
 export function RunTaskTrigger(){
     const session: LoginSession = useSelector((state: RootState) => selectLoginSession(state));
-    var API: PyramidAPI;
-    if (session?.token){
-        API = new PyramidAPI(makeTokenGrant(session.domain, session.token))
-    }
+    return (
+        <div className={styles.embedSettings}>
+        <ThemeProvider theme={themeNormal}>        
+            <TableContainer>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Task Name</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Status</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    <TaskRunWidget {...{type: "task", name: "Update RSS Feed (Run Model [reRunTask])", runId: "729cc1db-d8b6-4833-8cef-cd71fda2ca88", session: session}}/>
+                    <TaskRunWidget {...{type: "schedule", name: "Alert on New Story is Available (Force Schedule Run [runSchedule])", runId: "26ea7d78-be08-4baa-9a9d-051c9caefcb5", session: session}}/>
+                    <TaskRunWidget {...{type: "schedule", name: "Alert on No New Content (Force Schedule Run [runSchedule])", runId: "7db91261-3941-4ad2-a3e3-7c6ed4d491f3", session: session}}/>
+                </TableBody>
+            </Table>
+            </TableContainer>
+        </ThemeProvider>
+    </div>
+    )
+}
 
-    const triggerUpdate = (taskid: string) => {
-        if (API){
-            API.reRunTask(taskid).then(
-                (res) => {
-                    console.log(res);
-                });
-        }else{
-            console.log('no session.');
-        }
+interface TaskRunWidgetOpts {
+    type: string;
+    name: string;
+    runId: string;
+    session: LoginSession;
+}
+
+function TaskRunWidget(opts: TaskRunWidgetOpts){
+    const [state, setState] = useState({
+        running: false,
+        error: false
+    })
+    var API: PyramidAPI;
+    if (opts.session?.token){
+        API = new PyramidAPI(makeTokenGrant(opts.session.domain, opts.session.token))
     }
 
     const runSchedule = (scheduleId: string) => {
@@ -57,27 +83,69 @@ export function RunTaskTrigger(){
             API.runSchedule(scheduleId).then(
                 (res) => {
                     console.log(res);
+                    handleResult(res);
                 });
         }else{
             console.log('no session.');
         }
     }
-    
+
+    const runTask = (taskid: string) => {
+        if (API){
+            API.reRunTask(taskid).then(
+                (res) => {
+                    console.log(res);
+                    handleResult(res);
+                });
+        }else{
+            console.log('no session.');
+        }
+    }
+
+    const handleResult = (res: any) => {
+        if(res?.data !== undefined){
+            setState({...state, ...{running: false, error: false}});
+        }else{
+            setState({...state, ...{running: false, error: true}});
+            console.error(res);
+        }
+    }
+
+    const icon = () : string => {
+        if(state.running){
+            return styles.open_icon;
+        };
+        if(state.error){
+            return styles.edit_icon
+        }
+        return styles.reload_icon
+    }
+
+    const doRun = () => {
+        if(!state.running){
+            setState({...state, ...{running: true}});
+            if(opts.type === 'task'){
+                runTask(opts.runId);
+            }else{
+                runSchedule(opts.runId);
+            }
+        }
+    }
+
     return (
-        <div>
-            <Link href='#' onClick={() => { triggerUpdate('729cc1db-d8b6-4833-8cef-cd71fda2ca88') }}>
-                Update RSS Feed (Run Model [reRunTask])
-            </Link>
-            <hr/>
-            <Link href='#' onClick={() => {runSchedule('26ea7d78-be08-4baa-9a9d-051c9caefcb5')}}>
-                Alert on New Story is Available (Force Schedule Run [runSchedule])
-            </Link>
-            <hr/>
-            <Link href='#' onClick={() => {runSchedule('7db91261-3941-4ad2-a3e3-7c6ed4d491f3')}}>
-                Alert on No New Content (Force Schedule Run [runSchedule])
-            </Link>
-        </div>
+        <TableRow key={opts.name}>
+            <TableCell component="th" scope="row">
+                {opts.name}
+            </TableCell>
+            <TableCell component="th" scope="row">
+                {opts.type}
+            </TableCell>
+            <TableCell component="th" scope="row" onClick={doRun} >
+                <div className={icon()}/>    
+            </TableCell>
+        </TableRow>
     )
+
 }
 
 
@@ -375,27 +443,40 @@ export function DynamicEmbedName(){
 export function JustJSON(){
     const location = useLocation();
     const name = location.pathname.replace('/metadata/', '').replace('.json', '');
-    const state = store.getState();
+    const [loaded, setLoaded] = useState(false);
+    const [content, setContent] = useState({});
 
-    const assetFromURL = () => {
-        console.log(name);
+    async function assetFromURL(){
+        await waitSync('root');
+        const state = store.getState();
+        if ( !state.auth.token){
+            return;
+        }
         switch(name){
             case 'all':
-                return {
+                setContent({
                     'notification': state.notification,
                     'content': state.content
-                }
+                });
+                break;
             case 'notification':
-                return state.notification;
+                setContent(state.notification);
+                break;
             case 'content':
-                return state.content
+                setContent(state.content);
+                break;
             default:
-                return {};
+                setContent({});
         }
+        setLoaded(true);
     }
-
     useEffect(() => {
-        var res = JSON.stringify(assetFromURL());
+        if (loaded){
+            return;
+        }
+        document.title = 'MetaData';
+        assetFromURL();
+        var res = JSON.stringify(content);
         window.document.write(res);
     });
 
