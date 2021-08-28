@@ -10,6 +10,7 @@ import {LoginSession, selectLoginSession} from '../auth/authSlice'
 
 import {EmbedControlWidget} from '../content/EditContent';
 import {SimpleTree} from '../picker/Picker';
+import { ContentFolder, ContentItem } from '../../utils/api_types';
 
 import {getEmbedViewByName, getEmbedViewByContentID, getServerEmbedContent, EmbedView} from '../content/contentSlice';
 
@@ -228,8 +229,8 @@ export function SelectAndEdit(){
     const session: LoginSession = useSelector((root: RootState) => selectLoginSession(root));
     const view: EmbedView = useSelector((root: RootState) => getEmbedViewByContentID(root, session.domain, state.contentId));
 
-    const onPickContent = (id: string) => {
-        setState({contentId: id, name: ""});
+    const onPickContent = (item: ContentFolder | ContentItem) => {
+        setState({contentId: item.id, name: item.caption});
     }
 
     return (
@@ -294,8 +295,7 @@ export function PyramidEmbed(settings: EmbedSettings){
     const initClient = () => {
         setErr(false);
         setRunning(true);
-        console.log(`init client ${settings.contentID}`)
-        client.login(state.user_name, state.password);  // TODO Remove after upstream library fix
+        console.log(`init client ${settings.contentID}`);
         client.setAuthToken(state.embedToken);  // this alone currently does not work. so we have to use ^^
         client.init();
         client.setAuthFailureCallback(onErr)

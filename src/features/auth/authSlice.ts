@@ -13,7 +13,7 @@ export interface LoginSession{
     domain: string,
     user_id: string
     user_name: string
-    password: string // Remove after embed library fix merged
+    // password: string // Remove after embed library fix merged
 }
 
 const initialState: LoginSession = {
@@ -22,7 +22,7 @@ const initialState: LoginSession = {
     domain: '',
     user_id: '',
     user_name: '',
-    password: '' // Remove after embed library fix merged
+    // password: '' // Remove after embed library fix merged
 };
 
 
@@ -36,7 +36,7 @@ export const authSlice = createSlice({
             state.embedToken = action.payload.embedToken;
             state.user_id = action.payload.user_id;
             state.user_name = action.payload.user_name;
-            state.password = action.payload.password; // Remove after embed library fix merged
+            // state.password = action.payload.password; // Remove after embed library fix merged
         },
     }
 });
