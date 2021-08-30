@@ -177,7 +177,7 @@ function FormFieldRenderer() {
                 padding: '8px',
             }}
               onClick={() => {
-                openDialog<DialogReturn, DialogProps>('./picker', {
+                openDialog<DialogReturn, DialogProps>('/graphcms-pa/picker', {
                   maxWidth: '392px',
                 }).then((value) => {    
                     if (value) {
