@@ -63,7 +63,7 @@ interface AppProperties {
 }
 
 export function App(props: AppProperties) {
-    let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
+  let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
   return (
     
       <BrowserRouter basename={baseName}>
@@ -177,7 +177,7 @@ function FormFieldRenderer() {
                 padding: '8px',
             }}
               onClick={() => {
-                openDialog<DialogReturn, DialogProps>('picker', {
+                openDialog<DialogReturn, DialogProps>('./picker', {
                   maxWidth: '392px',
                 }).then((value) => {    
                     if (value) {
