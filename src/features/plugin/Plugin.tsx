@@ -228,6 +228,7 @@ function PyramidDialogPicker() {
         console.log(`Closing dialog with selected: ${content.id}`);
         const result = {
             embed_token: localSession.embedToken,
+            embed_domain: config.EMBED_DOMAIN,
             contentID: content.id,
             description: content.caption,
             url: config.PA_URL,
