@@ -8,11 +8,16 @@ Since GraphCMS does not hide credentials from administrators, and their credenti
 
 #### Installation
 
+![image info](./doc/new-extension.jpg)
+![image info](./doc/ext-settings.jpg)
+![image info](./doc/schema-view.jpg)
+
 #### Usage
 
-
-
-
+![image info](./doc/new-content-1.jpg)
+![image info](./doc/new-content-2.jpg)
+![image info](./doc/new-content-3.jpg)
+![image info](./doc/new-content-4.jpg)
 
 ```json
 {
