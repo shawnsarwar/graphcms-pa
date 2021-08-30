@@ -63,9 +63,12 @@ interface AppProperties {
 }
 
 export function App(props: AppProperties) {
+  const queryParams = new URLSearchParams(window.location.search);
+  const qp = queryParams.get('extensionUid');
+  const uid: string =  qp !== null ? qp : 'missing-extensionUid';
   let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
   return (
-    <Wrapper declaration={declaration}>
+    <Wrapper uid={uid} declaration={declaration}>
       <BrowserRouter basename={baseName}>
         <Switch>
           <Route path="/" component={BaseRouter}/>
