@@ -29,6 +29,11 @@ export const declaration: FieldExtensionDeclaration = {
             displayName: 'Pyramid Instance URL',
             required: true,
         },
+        EMBED_DOMAIN: {
+          type: 'string',
+          displayName: "Embed Domain (domain of site that will host the embedded content)",
+          required: true,
+      },
         USER:{
             type: 'string',
             displayName: "Embed User's Username",
@@ -38,7 +43,7 @@ export const declaration: FieldExtensionDeclaration = {
             type: 'string',
             displayName: "Embed User's Password",
             required: true,
-        }
+      }
     },
     extensionType: 'field',
     fieldType: FieldExtensionType.JSON,
@@ -238,7 +243,8 @@ function PyramidDialogPicker() {
         const creds: LoginCredentials = {
             user_name: config.USER,
             password: config.PASSWORD,
-            domain: config.PA_URL
+            domain: config.PA_URL,
+            embedDomain: config.EMBED_DOMAIN
         };
         makeSession(creds).then(session => {
             if (session !== undefined){
@@ -247,7 +253,7 @@ function PyramidDialogPicker() {
                 setReady(true);
             }    
         });
-    }, [ready, setReady, config.USER, config.PASSWORD, config.PA_URL, dispatch]);
+    }, [ready, setReady, config.USER, config.PASSWORD, config.PA_URL, config.EMBED_DOMAIN, dispatch]);
   
     return (
         <div>

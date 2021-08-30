@@ -11,7 +11,7 @@ export async function makeSession(creds: LoginCredentials){
     );
     await API.signIn();
     var user: UserInfo = await API.getMe().then(response => response?.data);
-    var embedToken: string = await API.userGetEmbedToken(creds.user_name, creds.password, creds.domain).then(response => response);
+    var embedToken: string = await API.userGetEmbedToken(creds.user_name, creds.password, creds.embedDomain).then(response => response);
     // TODO Replace after library fix is merged
     if (user === undefined || embedToken === undefined){
         return;
