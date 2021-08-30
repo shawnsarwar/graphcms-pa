@@ -48,13 +48,11 @@ export function AuthController(props? : AuthControllerProps){
     
 
     function doLogin(creds: LoginCredentials){
-        console.log(creds);
         makeSession(creds).then((sess? :LoginSession) => {
             if (sess === undefined){
                 console.error('Bad credentials');
                 return;
             }
-            console.log('Success');
             dispatch(setLoginSession(sess as LoginSession));
         });
     }
@@ -63,7 +61,8 @@ export function AuthController(props? : AuthControllerProps){
         return {
             user_name: session.user_name,
             domain: session.domain,
-            password: ""
+            password: "",
+            embedDomain: session.embedDomain
         } as CredInterface
     }
 
@@ -105,7 +104,8 @@ interface CredInterface {
     [key: string]: string,
     user_name: string,
     password: string,
-    domain: string
+    domain: string,
+    embedDomain: string
 }
 
 interface AuthContentWidgetProps {
