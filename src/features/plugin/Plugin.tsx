@@ -58,22 +58,38 @@ type GraphCMSPyramidEmbed = {
     url: string
 };
 
-export function App() {
-    return (
-      <Wrapper declaration={declaration}>
-        <BrowserRouter>
-          <Switch>
-            <Route path="/" exact>
-              <Extension />
-            </Route>
-            <Route path="/picker" exact>
-              <PyramidDialogPicker />
-            </Route>
-          </Switch>
-        </BrowserRouter>
-      </Wrapper>
-    );
-  }
+interface AppProperties {
+  baseUrl?: string
+}
+
+export function App(props: AppProperties) {
+  let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
+  return (
+    <Wrapper declaration={declaration}>
+      <BrowserRouter basename={baseName}>
+        <Switch>
+          <Route path="/" component={BaseRouter}/>
+        </Switch>
+      </BrowserRouter>
+    </Wrapper>
+  );
+}
+
+export function BaseRouter(){
+  return (
+    <Switch>
+      <Route path="/" exact>
+        <Extension />
+      </Route>
+        <Route path="/picker" exact>
+      <PyramidDialogPicker />
+        </Route>
+      <Route path="/embed" exact>
+        <div>An Embed</div>
+      </Route>
+    </Switch>
+  );
+}
 
 
 type DialogReturn = GraphCMSPyramidEmbed;

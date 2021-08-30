@@ -7,13 +7,17 @@ export interface LoginCredentials{
     domain: string
 }
 
+export interface TokenCredentials{
+    token: string,
+    domain: string
+}
+
 export interface LoginSession{
     token: string,
     embedToken: string,
     domain: string,
     user_id: string
     user_name: string
-    // password: string // Remove after embed library fix merged
 }
 
 const initialState: LoginSession = {
@@ -21,8 +25,7 @@ const initialState: LoginSession = {
     embedToken: '',
     domain: '',
     user_id: '',
-    user_name: '',
-    // password: '' // Remove after embed library fix merged
+    user_name: ''
 };
 
 
@@ -36,7 +39,6 @@ export const authSlice = createSlice({
             state.embedToken = action.payload.embedToken;
             state.user_id = action.payload.user_id;
             state.user_name = action.payload.user_name;
-            // state.password = action.payload.password; // Remove after embed library fix merged
         },
     }
 });

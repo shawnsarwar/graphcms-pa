@@ -9,13 +9,12 @@ import { Provider } from 'react-redux';
 import * as serviceWorker from './serviceWorker';
 
 let target = document.getElementById('root');
-// let baseUrl: string | null | undefined = target?.getAttribute("baseUrl");
+let baseUrl: string | null | undefined = target?.getAttribute("baseUrl");
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>
       <Provider store={store}>
-        {/* <App baseUrl={baseUrl === null || baseUrl === undefined ? "/" : baseUrl}/> */}
-        <App/>
+        <App baseUrl={baseUrl === null || baseUrl === undefined ? "/" : baseUrl}/>
       </Provider>
     </BrowserRouter>
   </React.StrictMode>,

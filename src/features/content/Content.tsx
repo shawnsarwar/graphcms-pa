@@ -296,7 +296,7 @@ export function PyramidEmbed(settings: EmbedSettings){
         setErr(false);
         setRunning(true);
         console.log(`init client ${settings.contentID}`);
-        client.setAuthToken(state.embedToken);  // this alone currently does not work. so we have to use ^^
+        client.setAuthToken(state.embedToken);
         client.init();
         client.setAuthFailureCallback(onErr)
         if(targetRef.current){

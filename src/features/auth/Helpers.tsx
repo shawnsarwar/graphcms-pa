@@ -21,8 +21,18 @@ export async function makeSession(creds: LoginCredentials){
         embedToken: embedToken,
         domain: creds.domain,
         user_id: user.id,
-        user_name: creds.user_name,
-        password: creds.password // TODO Replace after library fix is merged
+        user_name: creds.user_name
+        // password: creds.password // TODO Replace after library fix is merged
+    } as LoginSession;
+}
+
+export function embedOnlySession(domain: string, embedToken: string){
+    return {
+        token: '',
+        embedToken: embedToken,
+        domain: domain,
+        user_id: '',
+        user_name: ''
     } as LoginSession;
 }
 
