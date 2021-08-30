@@ -99,6 +99,7 @@ Exploring what GraphCMS saves, you'll see this result for the above EmbedView en
 
 ## Rendering Saved Embeds
 
+
 The schema for the "embed object" which will be saved in the CMS is:
 ```typescript
     {
