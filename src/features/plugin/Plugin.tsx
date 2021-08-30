@@ -65,29 +65,33 @@ interface AppProperties {
 export function App(props: AppProperties) {
   let baseName = props?.baseUrl !== undefined ? props.baseUrl : '/';
   return (
-    <Wrapper declaration={declaration}>
+    
       <BrowserRouter basename={baseName}>
         <Switch>
           <Route path="/" component={BaseRouter}/>
         </Switch>
       </BrowserRouter>
-    </Wrapper>
   );
 }
 
 export function BaseRouter(){
+  const queryParams = new URLSearchParams(window.location.search);
+  const qp = queryParams.get('extensionUid');
+  const uid: string =  qp !== null ? qp : 'missing-extensionUid';
   return (
-    <Switch>
-      <Route path="/" exact>
-        <Extension />
-      </Route>
-        <Route path="/picker" exact>
-      <PyramidDialogPicker />
+    <Wrapper uid={uid} declaration={declaration}>
+      <Switch>
+        <Route path="/" exact>
+          <Extension />
         </Route>
-      <Route path="/embed" exact>
-        <div>An Embed</div>
-      </Route>
-    </Switch>
+          <Route path="/picker" exact>
+        <PyramidDialogPicker />
+          </Route>
+        <Route path="/embed" exact>
+          <div>An Embed</div>
+        </Route>
+      </Switch>
+  </Wrapper>
   );
 }
 
@@ -173,7 +177,7 @@ function FormFieldRenderer() {
                 padding: '8px',
             }}
               onClick={() => {
-                openDialog<DialogReturn, DialogProps>('/picker', {
+                openDialog<DialogReturn, DialogProps>('/graphcms-pa/picker', {
                   maxWidth: '392px',
                 }).then((value) => {    
                     if (value) {
